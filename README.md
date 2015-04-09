@@ -1,4 +1,2 @@
-elasticsearch-rs
+(NOT WORKING) elasticsearch-rs
 ================
-
-An Elasticsearch client for Rust

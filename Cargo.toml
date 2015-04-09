@@ -1,0 +1,13 @@
+[package]
+name = "elasticsearch-rs"
+version = "0.0.1"
+authors = ["Tal Levy <tal@elastic.co>"]
+
+[dependencies]
+hyper = "*"
+url = "*"
+rustc-serialize = "*"
+time = "*"
+chrono = "*"
+regex = "*"
+regex_macros = "*"
