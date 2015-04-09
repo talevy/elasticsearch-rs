@@ -81,104 +81,41 @@ impl<'a> IndexRequest<'a> {
         }
     }
 
-    pub fn id(&'a mut self, id: String) -> &'a mut IndexRequest {
-        self.id = Some(id);
-        self
-    }
-
-    pub fn consistency(&'a mut self, consistency: Consistency) -> &'a mut IndexRequest {
-        self.consistency = Some(consistency);
-        self
-    }
-
-    pub fn op_type(&'a mut self, op_type: OpType) -> &'a mut IndexRequest {
-        self.op_type = Some(op_type);
-        self
-    }
-
-    pub fn parent(&'a mut self, parent: String) -> &'a mut IndexRequest {
-        self.parent = Some(parent);
-        self
-    }
-
-    pub fn refresh(&'a mut self, refresh: bool) -> &'a mut IndexRequest {
-        self.refresh = Some(refresh);
-        self
-    }
-
-    pub fn routing(&'a mut self, routing: String) -> &'a mut IndexRequest {
-        self.routing = Some(routing);
-        self
-    }
-
-    pub fn timeout(&'a mut self, timeout: Timeout) -> &'a mut IndexRequest {
-        self.timeout = Some(timeout);
-        self
-    }
-
-    pub fn timestamp(&'a mut self, timestamp: DateTime<UTC>) -> &'a mut IndexRequest {
-        self.timestamp = Some(timestamp);
-        self
-    }
-
-    pub fn ttl(&'a mut self, ttl: Duration) -> &'a mut IndexRequest {
-        self.ttl = Some(ttl);
-        self
-    }
-
-    pub fn version(&'a mut self, version: i64) -> &'a mut IndexRequest {
-        self.version = Some(version);
-        self
-    }
-
-    pub fn version_type(&'a mut self, version_type: VersionType) -> &'a mut IndexRequest {
-        self.version_type = Some(version_type);
-        self
+    field_setters!{ IndexRequest,
+        (id, String),
+        (consistency, Consistency),
+        (op_type, OpType),
+        (parent, String),
+        (refresh, bool),
+        (routing, String),
+        (timeout, Timeout),
+        (timestamp, DateTime<UTC>),
+        (ttl, Duration),
+        (version, i64),
+        (version_type, VersionType)
     }
 
     pub fn execute(&self) -> HttpResult<String> {
-        let path = urlify!(self.index, self.typ);
+        let mut path = urlify!(self.index, self.typ);
         let mut params: Vec<(&str, String)> = Vec::new();
 
-        if let Some(ref consistency) = self.consistency {
-            params.push((ConsistencyParam.into(), consistency.to_string()));
+        if let Some(ref id) = self.id {
+            path.push(id.to_string());
         }
 
-        if let Some(ref op_type) = self.op_type {
-            params.push((OpTypeParam.into(), op_type.to_string()));
-        }
-
-        if let Some(ref parent) = self.parent {
-            params.push((ParentParam.into(), parent.to_string()));
-        }
-
-        if let Some(ref refresh) = self.refresh {
-            params.push((RefreshParam.into(), refresh.to_string()));
-        }
-
-        if let Some(ref routing) = self.routing {
-            params.push((RoutingParam.into(), routing.to_string()));
-        }
-
-        if let Some(ref timeout) = self.timeout {
-            params.push((TimeoutParam.into(), timeout.to_string()));
-        }
-
-        if let Some(ref timestamp) = self.timestamp {
-            params.push((TimestampParam.into(), timestamp.to_string()));
-        }
-
-        if let Some(ref ttl) = self.ttl {
-            params.push((TtlParam.into(), ttl.num_milliseconds().to_string()));
-        }
-
-        if let Some(ref version) = self.version {
-            params.push((VersionParam.into(), version.to_string()));
-        }
-
-        if let Some(ref version_type) = self.version_type {
-            params.push((VersionTypeParam.into(), version_type.to_string()));
-        }
+        param_push!(params, ConsistencyParam => self.consistency, { |x| x.to_string() });
+        param_push!(params, OpTypeParam => self.op_type, { |x| x.to_string() });
+        param_push!(params, ParentParam => self.parent, { |x| x.to_string() });
+        param_push!(params, RefreshParam => self.refresh, { |x| x.to_string() });
+        param_push!(params, RoutingParam => self.routing, { |x| x.to_string() });
+        param_push!(params, RoutingParam => self.routing, { |x| x.to_string() });
+        param_push!(params, RoutingParam => self.routing, { |x| x.to_string() });
+        param_push!(params, TimeoutParam => self.timeout, { |x| x.to_string() });
+        param_push!(params, TimeoutParam => self.timeout, { |x| x.to_string() });
+        param_push!(params, TimestampParam => self.timestamp, { |x| x.to_string() });
+        param_push!(params, TtlParam => self.ttl, { |x| x.num_milliseconds().to_string() });
+        param_push!(params, VersionParam => self.version, { |x| x.to_string() });
+        param_push!(params, VersionTypeParam => self.version_type, { |x| x.to_string() });
 
         let body: String = json::encode(&self.source).ok().expect(":(");
 

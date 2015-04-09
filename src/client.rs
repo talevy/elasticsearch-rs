@@ -41,5 +41,5 @@ fn index() {
     let mut source: json::Object = BTreeMap::new();
     source.insert("first_field".to_string(), Json::U64(2u64));
 
-    println!("{:?}", client.index("hello", "world", source).op_type(OpType::Create).execute());
+    println!("{:?}", client.index("hello", "world", source).id("hello".to_string()).op_type(OpType::Create).execute());
 }

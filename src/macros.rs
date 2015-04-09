@@ -22,3 +22,24 @@ macro_rules! optional_query_pairs {
         }
     }
 }
+
+#[macro_export]
+macro_rules! field_setters {
+    ($c: ty , $(($field: ident, $t: ty)),+) => {
+        $(
+        pub fn $field(&'a mut self, $field: $t) -> &'a mut $c {
+            self.$field = Some($field);
+            self
+        }
+        )+
+    }
+}
+
+#[macro_export]
+macro_rules! param_push {
+    ($params:ident, $key:ident => $field_val:expr , { |$re:ident| $expr:expr }) => {
+        if let Some(ref $re) = $field_val {
+            $params.push(($key.into(), $expr));
+        }
+    }
+}
