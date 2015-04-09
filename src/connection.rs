@@ -2,11 +2,7 @@ use std::io::Read;
 use url::Url;
 use url::form_urlencoded::serialize;
 use hyper;
-use hyper::client::{IntoBody, Request};
-use hyper::net::Fresh;
-use hyper::{Post, Get};
-use hyper::error::{HttpResult,HttpError};
-use rustc_serialize::Decodable;
+use hyper::error::HttpResult;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Connection {
@@ -17,14 +13,6 @@ pub struct Connection {
 impl Connection {
     pub fn new(host: Url) -> Connection {
         Connection { host: host }
-    }
-
-    pub fn get(&self, mut path: Vec<String>) -> Request<Fresh> {
-        let mut url = self.host.clone();
-        url.path_mut().unwrap().append(&mut path);
-        let request = Request::new(Get, url).unwrap();
-
-        request
     }
 
     pub fn post(&self, mut path: Vec<String>, pairs: Vec<(&str, String)>, body: &[u8]) -> HttpResult<String> {

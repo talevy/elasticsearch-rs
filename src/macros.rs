@@ -1,20 +1,12 @@
 #[macro_export]
-macro_rules! urlify {
-    ($($component:expr),*) => {
-        vec![$($component.to_string()),*]
-    }
-}
-
-
-#[macro_export]
-macro_rules! optional_query_pairs {
-    ($($key: expr => $field_val: expr),+) => {
+macro_rules! param_pairs {
+    ($($param: expr),+) => {
         {
         let mut params: Vec<(&str, String)> = Vec::new();
 
         $(
-        if let Some(ref x) = $field_val {
-            params.push(($key.into(), x.as_ref()));
+        if let Some(ref param) = $param {
+            params.push((param.get_name(), param.get_value()));
         }
         )+
 
@@ -36,10 +28,11 @@ macro_rules! field_setters {
 }
 
 #[macro_export]
-macro_rules! param_push {
-    ($params:ident, $key:ident => $field_val:expr , { |$re:ident| $expr:expr }) => {
-        if let Some(ref $re) = $field_val {
-            $params.push(($key.into(), $expr));
+macro_rules! impl_query_param {
+    ($param_type: ty , $name:expr, { |$re:ident| $str_expr:expr }) => {
+        impl QueryParam for $param_type {
+            fn get_name(&self) -> &'static str { $name }
+            fn get_value(&self) -> String { let $re = self; $str_expr }
         }
     }
 }

@@ -1,13 +1,42 @@
-use time::Duration;
 use std::error::Error;
 use std::str::FromStr;
 use std::fmt;
 use std::string::ToString;
+use chrono::{Duration, DateTime, UTC};
 
 use self::ParseTimeoutError::*;
 use self::VersionType::*;
 use self::Consistency::*;
 use self::OpType::*;
+
+pub trait QueryParam {
+    fn get_name(&self) -> &'static str;
+    fn get_value(&self) -> String;
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Parent(String);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Refresh(bool);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Routing(String);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Timestamp(DateTime<UTC>);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Ttl(Duration);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Version(i64);
+
+impl_query_param!(Consistency, "consistency", { |x| x.to_string() });
+impl_query_param!(OpType, "op_type", { |x| x.to_string() });
+impl_query_param!(Parent, "parent", { |x| x.0.to_string() });
+impl_query_param!(Refresh, "refresh", { |x| x.0.to_string() });
+impl_query_param!(Routing, "routing", { |x| x.0.to_string() });
+impl_query_param!(Timestamp, "timestamp", { |x| x.0.to_string() });
+impl_query_param!(Timeout, "timeout", { |x| x.to_string() });
+impl_query_param!(Ttl, "ttl", { |x| x.0.num_milliseconds().to_string() });
+impl_query_param!(Version, "version", { |x| x.0.to_string() });
+impl_query_param!(VersionType, "version_type", { |x| x.to_string() });
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Consistency {

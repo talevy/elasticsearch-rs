@@ -1,10 +1,7 @@
-use collections::BTreeMap;
 use rustc_serialize::json;
-use rustc_serialize::json::Json;
 use url::Url;
 use connection::Connection;
 use index::IndexRequest;
-use types::OpType;
 
 //
 // TODO(talevy): MOAR connections! load-balancing, fault-tolerance, etc.
@@ -36,6 +33,10 @@ impl Client {
 
 #[test]
 fn index() {
+    use collections::BTreeMap;
+    use rustc_serialize::json::Json;
+    use types::OpType;
+
     let client = Client::new_with_str_host("http://localhost:9200");
 
     let mut source: json::Object = BTreeMap::new();

@@ -1,61 +1,27 @@
-use chrono::{Duration, DateTime, UTC};
-use types::{Consistency, OpType, VersionType, Timeout};
+use types::*;
 use rustc_serialize::json;
 use hyper::HttpResult;
-use client::Client;
 use connection::Connection;
-use std::convert::AsRef;
-use self::IndexParam::*;
-
-#[derive(Debug, PartialEq)]
-pub enum IndexParam {
-    ConsistencyParam,
-    OpTypeParam,
-    ParentParam,
-    RefreshParam,
-    RoutingParam,
-    TimeoutParam,
-    TimestampParam,
-    TtlParam,
-    VersionParam,
-    VersionTypeParam
-}
-
-impl<'a> Into<&'a str> for IndexParam {
-    fn into(self) -> &'a str {
-        match self {
-            ConsistencyParam => "consistency",
-            OpTypeParam => "op_type",
-            ParentParam => "parent",
-            RefreshParam => "refresh",
-            RoutingParam => "routing",
-            TimeoutParam => "timeout",
-            TimestampParam => "timestamp",
-            TtlParam => "ttl",
-            VersionParam => "version",
-            VersionTypeParam => "version_type"
-        }
-    }
-}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct IndexRequest<'a> {
     connection: &'a Connection,
+    // path fields
     index: String,
     typ: String,
     id: Option<String>,
-
+    // query params
     consistency: Option<Consistency>,
     op_type: Option<OpType>,
-    parent: Option<String>,
-    refresh: Option<bool>,
-    routing: Option<String>,
+    parent: Option<Parent>,
+    refresh: Option<Refresh>,
+    routing: Option<Routing>,
     timeout: Option<Timeout>,
-    timestamp: Option<DateTime<UTC>>,
-    ttl: Option<Duration>,
-    version: Option<i64>,
+    timestamp: Option<Timestamp>,
+    ttl: Option<Ttl>,
+    version: Option<Version>,
     version_type: Option<VersionType>,
-
+    // body
     source: json::Object
 }
 
@@ -85,40 +51,37 @@ impl<'a> IndexRequest<'a> {
         (id, String),
         (consistency, Consistency),
         (op_type, OpType),
-        (parent, String),
-        (refresh, bool),
-        (routing, String),
+        (parent, Parent),
+        (refresh, Refresh),
+        (routing, Routing),
         (timeout, Timeout),
-        (timestamp, DateTime<UTC>),
-        (ttl, Duration),
-        (version, i64),
+        (timestamp, Timestamp),
+        (ttl, Ttl),
+        (version, Version),
         (version_type, VersionType)
     }
 
     pub fn execute(&self) -> HttpResult<String> {
-        let mut path = urlify!(self.index, self.typ);
-        let mut params: Vec<(&str, String)> = Vec::new();
+        let mut path = vec![self.index.to_string(), self.typ.to_string()];
 
         if let Some(ref id) = self.id {
             path.push(id.to_string());
         }
 
-        param_push!(params, ConsistencyParam => self.consistency, { |x| x.to_string() });
-        param_push!(params, OpTypeParam => self.op_type, { |x| x.to_string() });
-        param_push!(params, ParentParam => self.parent, { |x| x.to_string() });
-        param_push!(params, RefreshParam => self.refresh, { |x| x.to_string() });
-        param_push!(params, RoutingParam => self.routing, { |x| x.to_string() });
-        param_push!(params, RoutingParam => self.routing, { |x| x.to_string() });
-        param_push!(params, RoutingParam => self.routing, { |x| x.to_string() });
-        param_push!(params, TimeoutParam => self.timeout, { |x| x.to_string() });
-        param_push!(params, TimeoutParam => self.timeout, { |x| x.to_string() });
-        param_push!(params, TimestampParam => self.timestamp, { |x| x.to_string() });
-        param_push!(params, TtlParam => self.ttl, { |x| x.num_milliseconds().to_string() });
-        param_push!(params, VersionParam => self.version, { |x| x.to_string() });
-        param_push!(params, VersionTypeParam => self.version_type, { |x| x.to_string() });
+        let params: Vec<(&str, String)> = param_pairs! {
+            self.consistency,
+            self.op_type,
+            self.parent,
+            self.refresh,
+            self.routing,
+            self.timeout,
+            self.timestamp,
+            self.ttl,
+            self.version,
+            self.version_type
+        };
 
         let body: String = json::encode(&self.source).ok().expect(":(");
-
         self.connection.post(path, params, body.as_bytes())
     }
 }
