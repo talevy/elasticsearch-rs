@@ -2,6 +2,7 @@ use rustc_serialize::json;
 use url::Url;
 use connection::Connection;
 use index::IndexRequest;
+use types::*;
 
 //
 // TODO(talevy): MOAR connections! load-balancing, fault-tolerance, etc.
@@ -26,8 +27,8 @@ impl Client {
         }
     }
 
-    pub fn index(&self, index: &str, typ: &str, source: json::Object) -> IndexRequest {
-        IndexRequest::new(&self.connection, index, typ, source)
+    pub fn index(&self, index: &str, typ: &str, id: Option<String>, source: json::Object) -> IndexRequest {
+        IndexRequest::new(&self.connection, index.to_string(), typ.to_string(), id, source)
     }
 }
 
@@ -42,5 +43,6 @@ fn index() {
     let mut source: json::Object = BTreeMap::new();
     source.insert("first_field".to_string(), Json::U64(2u64));
 
-    println!("{:?}", client.index("hello", "world", source).id("hello".to_string()).op_type(OpType::Create).execute());
+    println!("{:?}", client.index("hello", "world", None, source)
+             .op_type(OpType::Create).execute());
 }
