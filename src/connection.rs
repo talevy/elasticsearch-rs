@@ -4,7 +4,7 @@ use url::form_urlencoded::serialize;
 use hyper;
 use hyper::error::{HttpError, HttpResult};
 use hyper::method::Method;
-use hyper::method::Method::{Head, Put, Post, Get};
+use hyper::method::Method::{Head, Put, Post, Get, Delete};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Connection {
@@ -34,6 +34,8 @@ impl Connection {
             (Put, Some(bod)) => { hyper_client.put(url).body(bod).send() },
             (Put, None) => { hyper_client.put(url).send() },
             (Get, _) => { hyper_client.get(url).send() },
+            (Head, _) => { hyper_client.get(url).send() },
+            (Delete, _) => { hyper_client.delete(url).send() },
             _ => Err(HttpError::HttpMethodError)
         });
 

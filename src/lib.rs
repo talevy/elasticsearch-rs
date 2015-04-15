@@ -18,6 +18,6 @@ mod macros;
 
 mod types;
 mod connection;
-pub mod index;
+pub mod actions;
 pub mod client;
 

@@ -4,14 +4,28 @@ use std::fmt;
 use std::string::ToString;
 use chrono::{Duration, DateTime, UTC};
 
-use self::ParseTimeoutError::*;
-use self::VersionType::*;
-use self::Consistency::*;
-use self::OpType::*;
-
 pub trait QueryParam {
     fn get_name(&self) -> &'static str;
     fn get_value(&self) -> String;
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct StringList(pub Vec<String>);
+
+impl fmt::Display for StringList {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let mut has_entries = false;
+
+        if self.0.is_empty() { return write!(fmt, ""); }
+
+        for e in self.0.iter().take(self.0.len() - 1) {
+            let prefix = if has_entries { "," } else { "" };
+            write!(fmt, "{}{}", prefix, e);
+            has_entries = true;
+        };
+        let prefix = if has_entries { "," } else { "" };
+        return write!(fmt, "{}{}", prefix, self.0.iter().last().unwrap());
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -26,8 +40,33 @@ pub struct Timestamp(DateTime<UTC>);
 pub struct Ttl(Duration);
 #[derive(Debug, Clone, PartialEq)]
 pub struct Version(i64);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Fields(pub StringList);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Preference(String);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Realtime(bool);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Source(bool);
+#[derive(Debug, Clone, PartialEq)]
+pub struct SourceExclude(pub StringList);
+#[derive(Debug, Clone, PartialEq)]
+pub struct SourceInclude(pub StringList);
+#[derive(Debug, Clone, PartialEq)]
+pub struct IgnoreUnavailable(bool);
+#[derive(Debug, Clone, PartialEq)]
+pub struct AllowNoIndices(bool);
+#[derive(Debug, Clone, PartialEq)]
+pub struct MinScore(f64);
+
 
 impl_query_param!(Consistency, "consistency", { |x| x.to_string() });
+impl_query_param!(Fields, "fields", { |x| x.0.to_string() });
+impl_query_param!(Preference, "preference", { |x| x.0.to_string() });
+impl_query_param!(Realtime, "realtime", { |x| x.0.to_string() });
+impl_query_param!(Source, "_source", { |x| x.0.to_string() });
+impl_query_param!(SourceExclude, "_source_exclude", { |x| x.0.to_string() });
+impl_query_param!(SourceInclude, "_source_include", { |x| x.0.to_string() });
 impl_query_param!(OpType, "op_type", { |x| x.to_string() });
 impl_query_param!(Parent, "parent", { |x| x.0.to_string() });
 impl_query_param!(Refresh, "refresh", { |x| x.0.to_string() });
@@ -37,6 +76,29 @@ impl_query_param!(Timeout, "timeout", { |x| x.to_string() });
 impl_query_param!(Ttl, "ttl", { |x| x.0.num_milliseconds().to_string() });
 impl_query_param!(Version, "version", { |x| x.0.to_string() });
 impl_query_param!(VersionType, "version_type", { |x| x.to_string() });
+impl_query_param!(IgnoreUnavailable, "ignore_unavailable", { |x| x.0.to_string() });
+impl_query_param!(AllowNoIndices, "allow_no_indices", { |x| x.0.to_string() });
+impl_query_param!(ExpandWildcards, "expand_wildcards", { |x| x.to_string() });
+impl_query_param!(MinScore, "min_score", { |x| x.0.to_string() });
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ExpandWildcards {
+    Open,
+    Closed,
+    None,
+    All
+}
+
+impl ToString for ExpandWildcards {
+    fn to_string(&self) -> String {
+        match *self {
+            ExpandWildcards::Open => "open".to_string(),
+            ExpandWildcards::Closed => "closed".to_string(),
+            ExpandWildcards::None => "none".to_string(),
+            ExpandWildcards::All => "all".to_string()
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Consistency {
@@ -48,9 +110,9 @@ pub enum Consistency {
 impl ToString for Consistency {
     fn to_string(&self) -> String {
         match *self {
-            One => "one".to_string(),
-            Quorum => "quorum".to_string(),
-            All => "all".to_string()
+            Consistency::One => "one".to_string(),
+            Consistency::Quorum => "quorum".to_string(),
+            Consistency::All => "all".to_string()
         }
     }
 }
@@ -64,8 +126,8 @@ pub enum OpType {
 impl ToString for OpType {
     fn to_string(&self) -> String {
         match *self {
-            Index => "index".to_string(),
-            Create => "create".to_string()
+            OpType::Index => "index".to_string(),
+            OpType::Create => "create".to_string()
         }
     }
 }
@@ -81,10 +143,10 @@ pub enum VersionType {
 impl ToString for VersionType {
     fn to_string(&self) -> String {
         match *self {
-            Internal => "internal".to_string(),
-            External => "external".to_string(),
-            ExternalGte => "external_gte".to_string(),
-            Force => "force".to_string()
+            VersionType::Internal => "internal".to_string(),
+            VersionType::External => "external".to_string(),
+            VersionType::ExternalGte => "external_gte".to_string(),
+            VersionType::Force => "force".to_string()
         }
     }
 }
@@ -113,7 +175,7 @@ impl Timeout {
 
             return Ok(Timeout(Duration::milliseconds(millis * multiplier)));
         } else {
-            return Err(Invalid);
+            return Err(ParseTimeoutError::Invalid);
         }
     }
 }
@@ -140,7 +202,7 @@ pub enum ParseTimeoutError {
 impl Error for ParseTimeoutError {
     fn description(&self) -> &str {
         match *self {
-            Invalid => "invalid format",
+            ParseTimeoutError::Invalid => "invalid format",
         }
     }
 }
@@ -148,7 +210,7 @@ impl Error for ParseTimeoutError {
 impl fmt::Display for ParseTimeoutError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Invalid => write!(f, stringify!(self.description())),
+            ParseTimeoutError::Invalid => write!(f, stringify!(self.description())),
         }
     }
 }

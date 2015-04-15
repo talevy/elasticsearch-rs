@@ -1,7 +1,7 @@
 use rustc_serialize::json;
 use url::Url;
 use connection::Connection;
-use index::IndexRequest;
+use actions::{CountRequest, GetRequest, IndexRequest, ExistsRequest, DeleteRequest};
 use types::*;
 
 //
@@ -30,6 +30,22 @@ impl Client {
     pub fn index(&self, index: &str, typ: &str, id: Option<String>, source: json::Object) -> IndexRequest {
         IndexRequest::new(&self.connection, index.to_string(), typ.to_string(), id, source)
     }
+
+    pub fn get(&self, index: &str, typ: &str, id: &str) -> GetRequest {
+        GetRequest::new(&self.connection, index.to_string(), typ.to_string(), id.to_string())
+    }
+
+    pub fn count(&self, index: Option<String>, typ: Option<String>) -> CountRequest {
+        CountRequest::new(&self.connection, index, typ)
+    }
+
+    pub fn exists(&self, index: &str, typ: &str, id: &str) -> ExistsRequest {
+        ExistsRequest::new(&self.connection, index.to_string(), typ.to_string(), id.to_string())
+    }
+
+    pub fn delete(&self, index: &str, typ: &str, id: &str) -> DeleteRequest {
+        DeleteRequest::new(&self.connection, index.to_string(), typ.to_string(), id.to_string())
+    }
 }
 
 #[test]
@@ -45,4 +61,9 @@ fn index() {
 
     println!("{:?}", client.index("hello", "world", None, source)
              .op_type(OpType::Create).execute());
+
+    println!("{:?}",
+             client.get("hello", "world", "AUy68uX9ar9uSDJCjGv3")
+             .fields(Fields(StringList(vec!["first_field".to_string()]))).execute()
+            );
 }
