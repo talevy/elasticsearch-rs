@@ -58,6 +58,10 @@ pub struct IgnoreUnavailable(bool);
 pub struct AllowNoIndices(bool);
 #[derive(Debug, Clone, PartialEq)]
 pub struct MinScore(f64);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Local(bool);
+#[derive(Debug, Clone, PartialEq)]
+pub struct MasterTimeout(Timeout);
 
 
 impl_query_param!(Consistency, "consistency", { |x| x.to_string() });
@@ -73,6 +77,7 @@ impl_query_param!(Refresh, "refresh", { |x| x.0.to_string() });
 impl_query_param!(Routing, "routing", { |x| x.0.to_string() });
 impl_query_param!(Timestamp, "timestamp", { |x| x.0.to_string() });
 impl_query_param!(Timeout, "timeout", { |x| x.to_string() });
+impl_query_param!(MasterTimeout, "master_timeout", { |x| x.0.to_string() });
 impl_query_param!(Ttl, "ttl", { |x| x.0.num_milliseconds().to_string() });
 impl_query_param!(Version, "version", { |x| x.0.to_string() });
 impl_query_param!(VersionType, "version_type", { |x| x.to_string() });
@@ -80,6 +85,7 @@ impl_query_param!(IgnoreUnavailable, "ignore_unavailable", { |x| x.0.to_string()
 impl_query_param!(AllowNoIndices, "allow_no_indices", { |x| x.0.to_string() });
 impl_query_param!(ExpandWildcards, "expand_wildcards", { |x| x.to_string() });
 impl_query_param!(MinScore, "min_score", { |x| x.0.to_string() });
+impl_query_param!(Local, "local", { |x| x.0.to_string() });
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExpandWildcards {

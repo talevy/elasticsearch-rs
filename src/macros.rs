@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! param_pairs {
-    ($($param: expr),+) => {
+    ($($param: expr),*) => {
         {
         let mut params: Vec<(&str, String)> = Vec::new();
 
@@ -8,9 +8,19 @@ macro_rules! param_pairs {
         if let Some(ref param) = $param {
             params.push((param.get_name(), param.get_value()));
         }
-        )+
+        )*
 
         params
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! field_setter {
+    ($c: ty , ($field: ident, $t: ty)) => {
+        pub fn $field(&'a mut self, $field: $t) -> &'a mut $c {
+            self.$field = Some($field);
+            self
         }
     }
 }
@@ -91,7 +101,10 @@ macro_rules! new_query_struct {
                     }
                 }
 
-                field_setters!{ $c, $( ($opt_field, $opt_type)),* }
+
+                $(
+                    field_setter!{ $c , ($opt_field, $opt_type) }
+                )*
 
                 pub fn get_path(&$path_x) -> Vec<String> $fn_path
 

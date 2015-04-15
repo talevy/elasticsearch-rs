@@ -2,6 +2,7 @@ use rustc_serialize::json;
 use url::Url;
 use connection::Connection;
 use actions::{CountRequest, GetRequest, IndexRequest, ExistsRequest, DeleteRequest};
+use indices;
 use types::*;
 
 //
@@ -10,20 +11,41 @@ use types::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Client {
+    pub connection: Connection,
+    pub indices: IndicesClient
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct IndicesClient {
     pub connection: Connection
 }
+
+impl IndicesClient {
+    pub fn new(conn: Connection) -> IndicesClient {
+        IndicesClient { connection: conn }
+    }
+
+    pub fn exists(&self, indices: StringList) -> indices::ExistsRequest {
+        indices::ExistsRequest::new(&self.connection, indices)
+    }
+}
+
 
 impl Client {
 
     pub fn new_with_url_host(host: Url) -> Client {
+        let conn = Connection::new(host);
         Client {
-            connection: Connection::new(host)
+            connection: conn.clone(),
+            indices: IndicesClient::new(conn.clone())
         }
     }
 
     pub fn new_with_str_host(host: &str) -> Client {
+        let conn =Connection::new(Url::parse(host).unwrap());
         Client {
-            connection: Connection::new(Url::parse(host).unwrap())
+            connection: conn.clone(),
+            indices: IndicesClient::new(conn.clone())
         }
     }
 

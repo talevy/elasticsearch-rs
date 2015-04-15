@@ -19,5 +19,6 @@ mod macros;
 mod types;
 mod connection;
 pub mod actions;
+pub mod indices;
 pub mod client;
 
