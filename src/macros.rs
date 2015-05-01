@@ -1,4 +1,26 @@
 #[macro_export]
+macro_rules! impl_as_ref {
+    (pub struct $struct_name:ident ( $inner_type:ty ) ) => {
+
+        #[derive(Debug, Clone, PartialEq)]
+        pub struct $struct_name($inner_type);
+
+        impl Into<$struct_name> for $inner_type {
+            fn into(self) -> $struct_name {
+                $struct_name(self)
+            }
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! string_list {
+    ($($i:expr),*) => {
+        StringList(vec![$($i.to_string()),*])
+    }
+}
+
+#[macro_export]
 macro_rules! param_pairs {
     ($($param: expr),*) => {
         {
@@ -18,22 +40,10 @@ macro_rules! param_pairs {
 #[macro_export]
 macro_rules! field_setter {
     ($c: ty , ($field: ident, $t: ty)) => {
-        pub fn $field(&'a mut self, $field: $t) -> &'a mut $c {
-            self.$field = Some($field);
+        pub fn $field<T: Into<$t>>(&'a mut self, $field: T) -> &'a mut $c {
+            self.$field = Some($field.into());
             self
         }
-    }
-}
-
-#[macro_export]
-macro_rules! field_setters {
-    ($c: ty , $(($field: ident, $t: ty)),+) => {
-        $(
-        pub fn $field(&'a mut self, $field: $t) -> &'a mut $c {
-            self.$field = Some($field);
-            self
-        }
-        )+
     }
 }
 
@@ -69,7 +79,11 @@ macro_rules! new_query_struct {
                     }
                 }
 
-                field_setters!{ $c, $( ($opt_field, $opt_type)),* }
+                pub fn get(self) -> $c<'a> { self }
+
+                $(
+                    field_setter!{ $c , ($opt_field, $opt_type) }
+                )*
 
                 pub fn get_path(&$path_x) -> Vec<String> $fn_path
 
@@ -101,6 +115,7 @@ macro_rules! new_query_struct {
                     }
                 }
 
+                pub fn get(self) -> $c<'a> { self }
 
                 $(
                     field_setter!{ $c , ($opt_field, $opt_type) }
@@ -115,5 +130,21 @@ macro_rules! new_query_struct {
                     self.connection.request($method, self.get_path(), params, None)
                 }
             }
+    }
+}
+
+#[macro_export]
+macro_rules! join_str {
+    ($delim:expr , $iter:expr) => {
+        {
+            let mut out = String::new();
+            for c in $iter {
+                if out.len() > 0 {
+                    out.push_str($delim);
+                }
+                out.push_str(c.to_string());
+            }
+            out
+        }
     }
 }

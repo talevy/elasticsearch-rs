@@ -70,22 +70,23 @@ impl Client {
     }
 }
 
-#[test]
-fn index() {
-    use collections::BTreeMap;
-    use rustc_serialize::json::Json;
-    use types::OpType;
+// #[test]
+// fn index() {
+//     use collections::BTreeMap;
+//     use rustc_serialize::json::Json;
+//     use types::OpType;
 
-    let client = Client::new_with_str_host("http://localhost:9200");
+//     let client = Client::new_with_str_host("http://localhost:9200");
 
-    let mut source: json::Object = BTreeMap::new();
-    source.insert("first_field".to_string(), Json::U64(2u64));
+//     let mut source: json::Object = BTreeMap::new();
+//     source.insert("first_field".to_string(), Json::U64(2u64));
 
-    println!("{:?}", client.index("hello", "world", None, source)
-             .op_type(OpType::Create).execute());
+//     println!("{:?}", client.index("hello", "world", None, source)
+//              .op_type(OpType::Create).execute());
 
-    println!("{:?}",
-             client.get("hello", "world", "AUy68uX9ar9uSDJCjGv3")
-             .fields(Fields(StringList(vec!["first_field".to_string()]))).execute()
-            );
-}
+//     let resp = client.get("hello", "world", "jofis")
+//         .parent("hello")
+//         .fields(string_list!["cool"]).execute();
+
+//     println!("{:?}", resp);
+// }

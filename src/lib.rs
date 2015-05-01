@@ -2,6 +2,7 @@
 #![feature(collections)]
 #![feature(std_misc)]
 #![feature(plugin)]
+#![feature(convert)]
 #![feature(trace_macros, log_syntax)]
 #![plugin(regex_macros)]
 

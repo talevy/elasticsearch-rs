@@ -1,8 +1,23 @@
 use types::*;
 use rustc_serialize::json;
 use hyper::HttpResult;
-use hyper::method::Method::{Get, Put, Post, Head, Delete};
+use hyper::method::Method::{Post, Head};
 use connection::Connection;
+
+// new_query_struct!{ AnalyzeRequest(index: Option<String>) {
+//     fn_path => |self| {
+//         if let Some(ref i) = self.index {
+//             vec![i.to_string()]
+//         } else {
+//             vec![]
+//         }
+//     },
+//     query_params => [
+//         (source: Source, None),
+//         (analyzer: Analyzer, None)
+//     ],
+//     method => Get
+// }}
 
 new_query_struct!{ ExistsRequest(indices: StringList) {
     fn_path => |self| {
